@@ -5,7 +5,6 @@ CFLAGS          ?= -arch arm64  -isysroot /home/cameron/Documents/SDK/iPhoneOS14
 INSTALL         ?= install
 FAKEROOT        ?= fakeroot
 PREFIX          ?= /usr
-DESTDIR         ?= 
 
 DEB_MAINTAINER  ?= Cameron Katri <me@cameronkatri.com>
 DEB_ARCH        ?= iphoneos-arm
@@ -24,10 +23,10 @@ install: build/snaprestore
 	$(INSTALL) -Dm755 build/snaprestore $(DESTDIR)$(PREFIX)/bin/snaprestore
 	$(INSTALL) -Dm644 LICENSE $(DESTDIR)$(PREFIX)/share/snaprestore/LICENSE
 
-package: build/snaprestore
+package: install
 	rm -rf staging
-	$(INSTALL) -Dm755 build/snaprestore staging$(PREFIX)/bin/snaprestore
-	$(INSTALL) -Dm644 LICENSE staging$(PREFIX)/share/snaprestore/LICENSE
+	mkdir -p staging
+	cp -a $(DESTDIR)$(PREFIX) staging
 	$(FAKEROOT) chown -R 0:0 staging
 	SIZE=$$(du -s staging | cut -f 1); \
 	$(INSTALL) -Dm755 src/snaprestore.control staging/DEBIAN/control; \
@@ -40,5 +39,9 @@ package: build/snaprestore
 	$(FAKEROOT) dpkg-deb -z9 -b staging build
 	rm -rf staging
 
-clean: 
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/snaprestore
+	rm -rf $(DESTDIR)$(PREFIX)/share/snaprestore
+
+clean:
 	rm -f build/snaprestore
