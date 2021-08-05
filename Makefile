@@ -1,10 +1,11 @@
 CC              ?= aarch64-apple-darwin-clang
 STRIP           ?= aarch64-apple-darwin-strip
 LDID            ?= ldid
-CFLAGS          ?= -arch arm64  -isysroot /home/cameron/Documents/SDK/iPhoneOS14.2.sdk -miphoneos-version-min=13.0
 INSTALL         ?= install
 FAKEROOT        ?= fakeroot
 PREFIX          ?= /usr
+TARGET_SYSROOT  ?= /home/cameron/Documents/SDK/iPhoneOS14.2.sdk
+CFLAGS          ?= -arch arm64 -isysroot $(TARGET_SYSROOT) -miphoneos-version-min=13.0
 
 DEB_MAINTAINER  ?= Cameron Katri <me@cameronkatri.com>
 DEB_ARCH        ?= iphoneos-arm
