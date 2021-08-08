@@ -14,9 +14,11 @@ Easily restore rootfs from the command line.
 
 ## Installation
 
-A build of `snaprestore` is available on https://cameronkatri.com and [Procursus](https://github.com/ProcursusTeam/Procursus), which you can install if your device is already setup with an instance of the build system.
+A build of `snaprestore` is available on [Cameron Katri's repo](https://cameronkatri.com/), which you can install by adding the repo to your preferred package manager.
 
-Alternatively, you can compile `snaprestore` on your device using Make.
+[Procursus](https://github.com/ProcursusTeam/Procursus) also provides a build of `snaprestore`, which you can install if your device is already setup with an instance of the build system.
+
+Alternatively, you can compile `snaprestore` on your system with an iOS SDK using Make
 
     make install
 
