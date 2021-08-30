@@ -16,13 +16,13 @@ all: build/snaprestore
 
 build/snaprestore: src/snaprestore.m src/ent.xml
 	mkdir -p build
-	$(CC) $(CFLAGS) -o build/snaprestore src/snaprestore.m -framework IOKit -framework Foundation -framework CoreServices -fobjc-arc
-	$(STRIP) build/snaprestore
-	$(LDID) -Ssrc/ent.xml build/snaprestore
+	$(CC) $(CFLAGS) -o $@ $< -framework IOKit -framework Foundation -framework CoreServices -fobjc-arc
+	$(STRIP) $@
+	$(LDID) -S$(word 2,$^) $@
 
-install: build/snaprestore
-	$(INSTALL) -Dm755 build/snaprestore $(DESTDIR)$(PREFIX)/bin/snaprestore
-	$(INSTALL) -Dm644 LICENSE $(DESTDIR)$(PREFIX)/share/snaprestore/LICENSE
+install: build/snaprestore LICENSE
+	$(INSTALL) -Dm755 $< $(DESTDIR)$(PREFIX)/bin/snaprestore
+	$(INSTALL) -Dm644 $(word 2,$^) $(DESTDIR)$(PREFIX)/share/snaprestore/$(word 2,$^)
 
 package: install
 	rm -rf staging
@@ -46,3 +46,5 @@ uninstall:
 
 clean:
 	rm -f build/snaprestore
+
+.PHONY: all package uninstall clean
