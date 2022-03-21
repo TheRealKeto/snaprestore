@@ -28,20 +28,43 @@ void usage(char *name) {
 }
 
 NSString *bootsnapshot() {
-	const io_registry_entry_t chosen = IORegistryEntryFromPath(0, "IODeviceTree:/chosen");
-	const NSData *data = (__bridge const NSData *)IORegistryEntryCreateCFProperty(chosen, (__bridge CFStringRef)@"boot-manifest-hash", kCFAllocatorDefault, 0);
-	IOObjectRelease(chosen);
+	NSMutableString *outString = @"com.apple.os.update-";
+	const UInt8 *bytes;
+	CFIndex length;
+	CFDataRef manifestHash, rootSnapshotName;
 
-	NSMutableString *manifestHash = [NSMutableString stringWithString:@""]; 
-	NSUInteger len = [data length];
-	Byte *buf = (Byte*)malloc(len);
-	memcpy(buf, [data bytes], len);
-	int buf2;
-	for (buf2 = 0; buf2 <= 19; buf2++) {
-		[manifestHash appendFormat:@"%02X", buf[buf2]];
+	io_registry_entry_t chosen = IORegistryEntryFromPath(0, "IODeviceTree:/chosen");
+
+	rootSnapshotName = IORegistryEntryCreateCFProperty(chosen, CFSTR("root-snapshot-name"), kCFAllocatorDefault, 0);
+
+	if (rootSnapshotName != NULL && CFGetTypeID(rootSnapshotName) == CFDataGetTypeID()) {
+		CFStringRef snapshotString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, rootSnapshotName, kCFStringE      ncodingUTF8);
+		CFRelease(rootSnapshotName);
+		char buffer[100];
+		const char *ptr = CFStringGetCStringPtr(snapshotString, kCFStringEncodingUTF8);
+		if (ptr == NULL) {
+			if (CFStringGetCString(snapshotString, buffer, 100, kCFStringEncodingUTF8))
+				ptr = buffer;
+		}
+		return [NSString stringWithUTF8String:ptr];
+	} else {
+		manifestHash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("boot-manifest-hash"), kCFAllocatorDefault, 0);
+		IOObjectRelease(chosen);
+
+		if (manifestHash == NULL || CFGetTypeID(manifestHash) != CFDataGetTypeID()) {
+			fprintf(stderr, "Unable to read boot-manifest-hash or root-snapshot-name\n");
+			return 1;
+		}
+
+		length = CFDataGetLength(manifestHash);
+		bytes = CFDataGetBytePtr(manifestHash);
+		CFRelease(manifestHash);
+
+		for (int i = 0; i < length; i++)
+			[outString appendFormat:@"%02X", bytes[i]];
 	}
-	// add com.apple.os.update-
-	return [NSString stringWithFormat:@"%@%@", @"com.apple.os.update-", manifestHash];
+
+	return outString;
 }
 
 int restore(const char *vol, const char *snap) {
@@ -61,7 +84,7 @@ int mount(const char *vol, const char *snap, const char *mnt) {
 				NSLog(@"Error: Create folder failed %s", mnt);
 
 	int ret = fs_snapshot_mount(fd, mnt, snap, 0);
-	
+
 	return ret;
 }
 
