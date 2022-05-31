@@ -28,7 +28,7 @@ void usage(char *name) {
 }
 
 NSString *bootsnapshot() {
-	NSMutableString *outString = @"com.apple.os.update-";
+	NSMutableString *outString = [@"com.apple.os.update-" mutableCopy];
 	const UInt8 *bytes;
 	CFIndex length;
 	CFDataRef manifestHash, rootSnapshotName;
@@ -38,7 +38,7 @@ NSString *bootsnapshot() {
 	rootSnapshotName = IORegistryEntryCreateCFProperty(chosen, CFSTR("root-snapshot-name"), kCFAllocatorDefault, 0);
 
 	if (rootSnapshotName != NULL && CFGetTypeID(rootSnapshotName) == CFDataGetTypeID()) {
-		CFStringRef snapshotString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, rootSnapshotName, kCFStringE      ncodingUTF8);
+		CFStringRef snapshotString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, rootSnapshotName, kCFStringEncodingUTF8);
 		CFRelease(rootSnapshotName);
 		char buffer[100];
 		const char *ptr = CFStringGetCStringPtr(snapshotString, kCFStringEncodingUTF8);
@@ -53,7 +53,7 @@ NSString *bootsnapshot() {
 
 		if (manifestHash == NULL || CFGetTypeID(manifestHash) != CFDataGetTypeID()) {
 			fprintf(stderr, "Unable to read boot-manifest-hash or root-snapshot-name\n");
-			return 1;
+			exit(1);
 		}
 
 		length = CFDataGetLength(manifestHash);
