@@ -29,22 +29,19 @@ package: install
 	mkdir -p staging
 	cp -a $(DESTDIR)$(PREFIX) staging
 	$(FAKEROOT) chown -R 0:0 staging
-	SIZE=$$(du -s staging | cut -f 1); \
-	$(INSTALL) -Dm755 src/snaprestore.control staging/DEBIAN/control; \
-	sed -i ':a; s/@DEB_SNAPRESTORE@/$(DEB_SNAPRESTORE)/g; ta' staging/DEBIAN/control; \
-	sed -i ':a; s/@DEB_MAINTAINER@/$(DEB_MAINTAINER)/g; ta' staging/DEBIAN/control; \
-	sed -i ':a; s/@DEB_ARCH@/$(DEB_ARCH)/g; ta' staging/DEBIAN/control; \
-	cd staging && find . -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '"%P" ' | xargs md5sum > DEBIAN/md5sum; \
-	cd ..; \
-	echo "Installed-Size: $$SIZE" >> staging/DEBIAN/control
+	$(INSTALL) -Dm755 src/snaprestore.control staging/DEBIAN/control
+	sed -e 's/@DEB_SNAPRESTORE@/$(DEB_SNAPRESTORE)/g' \
+	    -e 's/@DEB_MAINTAINER@/$(DEB_MAINTAINER)/g' \
+	    -e 's/@DEB_ARCH@/$(DEB_ARCH)/g' -i staging/DEBIAN/control
+	find staging -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '"%P" ' | xargs md5sum > staging/DEBIAN/md5sum
+	echo "Installed-Size: $$(du -s staging | cut -f 1)" >> staging/DEBIAN/control
 	$(FAKEROOT) dpkg-deb -z9 -b staging build
 	rm -rf staging
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/snaprestore
-	rm -rf $(DESTDIR)$(PREFIX)/share/snaprestore
+	rm -rf $(DESTDIR)$(PREFIX)/bin/snaprestore $(DESTDIR)$(PREFIX)/share/snaprestore
 
 clean:
-	rm -f build/snaprestore
+	rm -rf build
 
 .PHONY: all package uninstall clean

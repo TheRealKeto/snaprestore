@@ -23,8 +23,7 @@ kern_return_t IOObjectRelease(io_object_t object);
 @end
 
 void usage(char *name) {
-	printf(
-		"Usage: %s [volume] [snapshot]\n", name);
+	printf("Usage: %s [volume] [snapshot]\n", name);
 }
 
 NSString *bootsnapshot() {
